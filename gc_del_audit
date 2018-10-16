@@ -1,0 +1,42 @@
+#!/bin/bash
+# This will pull all the logs from stackdriver that have me as the authentication
+# and contain the word 'delete' in the methodName.
+# This should be all the logs of my deletes in the last 1d
+# If a longer time frame is needed, use --freshness=
+
+gcloud config set project seal-internal
+gcloud logging \
+    read "\
+		protoPayload.authenticationInfo.principalEmail="charles.wagner@seal-software.com" \
+		AND protoPayload.methodName:delete" \
+		--freshness=4d \
+		--format="csv[separator=','](\
+            protoPayload.authenticationInfo.principalEmail,\
+			timestamp,\
+            severity,\
+            resource.labels.project_id,\
+			resource.type,\
+			protoPayload.methodName,\
+			protoPayload.resourceName,\
+			protoPayload.response.operationType,\
+			protoPayload.response.status\
+        )" \
+> /Users/charleswagner/sd_exp/output/`date +"%Y-%m-%d"`-vm_delete_results_100.csv
+gcloud config set project customers-179817
+gcloud logging \
+    read "\
+		protoPayload.authenticationInfo.principalEmail="charles.wagner@seal-software.com" \
+		AND protoPayload.methodName:delete" \
+        --freshness=4d \
+		--format="csv[separator=','](\
+            protoPayload.authenticationInfo.principalEmail,\
+            timestamp,\
+            severity,\
+            resource.labels.project_id,\
+            resource.type,\
+            protoPayload.methodName,\
+            protoPayload.resourceName,\
+            protoPayload.response.operationType,\
+            protoPayload.response.status\
+        )" \
+>> /Users/charleswagner/sd_exp/output/`date +"%Y-%m-%d"`-vm_delete_results_100.csv
